@@ -6,6 +6,7 @@ vet:
 	go vet github.com/piprate/json-gold/...
 
 test: vet
+	go clean -testcache
 	go test github.com/piprate/json-gold/...
 
 test-cov: vet

@@ -1720,6 +1720,18 @@ func (c *Context) HasContainerMapping(property string, val string) bool {
 	return false
 }
 
+func (c *Context) HasContainerMapping2(dict map[string]interface{}, val string) bool {
+	if container, hasContainer := dict["@container"]; hasContainer {
+		for _, container := range container.([]interface{}) {
+			if container == val {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // IsReverseProperty returns true if the given property is a reverse property
 func (c *Context) IsReverseProperty(property string) bool {
 	td := c.GetTermDefinition(property)
