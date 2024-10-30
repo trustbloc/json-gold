@@ -27,8 +27,9 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/piprate/json-gold/ld"
 	"github.com/stretchr/testify/assert"
+
+	. "github.com/piprate/json-gold/ld"
 )
 
 // RewriteHostTransport is an http.RoundTripper that rewrites requests
@@ -693,4 +694,65 @@ func (er *EarlReport) write(filename string) {
 	defer f.Close()
 	_, _ = f.Write(b)
 	_, _ = f.WriteString("\n")
+}
+
+func TestVPNormalization(t *testing.T) {
+	proc := NewJsonLdProcessor()
+	options := NewJsonLdOptions("")
+	options.Algorithm = AlgorithmURDNA2015
+	options.ProduceGeneralizedRdf = true
+
+	input := `{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "type": [
+    "VerifiablePresentation"
+  ],
+  "verifiableCredential": [
+    {
+      "@context": [
+        "https://www.w3.org/ns/credentials/v2"
+      ],
+      "type": [
+        "VerifiableCredential"
+      ],
+      "issuer": "did:key:z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj",
+      "credentialSubject": {
+        "id": "did:example:subject"
+      },
+      "proof": {
+        "type": "DataIntegrityProof",
+        "created": "2024-10-17T18:17:31Z",
+        "verificationMethod": "did:key:z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj#z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj",
+        "cryptosuite": "eddsa-rdfc-2022",
+        "proofPurpose": "assertionMethod",
+        "proofValue": "z49q4jLydafVc5qGuRg5WAnG7au6uddhCCr2pNK23JJKzgwhWQUCDGym5GDqJM76ZzEWaU8y53xZffFk7XsLYo8ek"
+      }
+    }
+  ]
+}`
+
+	var dict map[string]interface{}
+	err := json.Unmarshal([]byte(input), &dict)
+	assert.NoError(t, err)
+
+	options.Format = "application/n-quads"
+	output2, err := proc.Normalize(dict, options)
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, output2.(string),
+		`_:c14n0 <http://purl.org/dc/terms/created> "2024-10-17T18:17:31Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> _:c14n2 .
+_:c14n0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/security#DataIntegrityProof> _:c14n2 .
+_:c14n0 <https://w3id.org/security#cryptosuite> "eddsa-rdfc-2022"^^<https://w3id.org/security#cryptosuiteString> _:c14n2 .
+_:c14n0 <https://w3id.org/security#proofPurpose> <https://w3id.org/security#assertionMethod> _:c14n2 .
+_:c14n0 <https://w3id.org/security#proofValue> "z49q4jLydafVc5qGuRg5WAnG7au6uddhCCr2pNK23JJKzgwhWQUCDGym5GDqJM76ZzEWaU8y53xZffFk7XsLYo8ek"^^<https://w3id.org/security#multibase> _:c14n2 .
+_:c14n0 <https://w3id.org/security#verificationMethod> <did:key:z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj#z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj> _:c14n2 .
+_:c14n1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2018/credentials#VerifiablePresentation> .
+_:c14n1 <https://www.w3.org/2018/credentials#verifiableCredential> _:c14n3 .
+_:c14n4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2018/credentials#VerifiableCredential> _:c14n3 .
+_:c14n4 <https://w3id.org/security#proof> _:c14n2 _:c14n3 .
+_:c14n4 <https://www.w3.org/2018/credentials#credentialSubject> <did:example:subject> _:c14n3 .
+_:c14n4 <https://www.w3.org/2018/credentials#issuer> <did:key:z6MkpJySvETLnxhQG9DzEdmKJtysBDjuuTeDfUj1uNNCUqcj> _:c14n3 .
+`)
 }

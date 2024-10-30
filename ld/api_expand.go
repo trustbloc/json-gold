@@ -790,10 +790,11 @@ func (api *JsonLdApi) expandObject(activeCtx *Context, activeProperty string, ex
 			}
 		}
 
+		isContainer := termCtx.HasContainerMapping2(td, "@graph")
 		isContainerGraph := termCtx.HasContainerMapping(key, "@graph")
 		isContainerID := termCtx.HasContainerMapping(key, "@id")
 		isContainerIndex := termCtx.HasContainerMapping(key, "@index")
-		if isContainerGraph && !isContainerID && !isContainerIndex {
+		if (isContainerGraph || isContainer) && !isContainerID && !isContainerIndex {
 			evList := Arrayify(expandedValue)
 			rVal := make([]interface{}, 0)
 			for _, ev := range evList {
