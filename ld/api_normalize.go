@@ -17,18 +17,25 @@ package ld
 import (
 	"crypto/sha1" //nolint:gosec
 	"crypto/sha256"
+	"crypto/sha512"
 	hashPkg "hash"
 	"sort"
 	"strings"
 )
 
+type MessageDigestAlgorithm string
+
 const (
 	AlgorithmURDNA2015 = "URDNA2015"
 	AlgorithmURGNA2012 = "URGNA2012"
+
+	MessageDigestAlgorithmSHA256 MessageDigestAlgorithm = "SHA256"
+	MessageDigestAlgorithmSHA384 MessageDigestAlgorithm = "SHA384"
+	MessageDigestAlgorithmSHA512 MessageDigestAlgorithm = "SHA512"
 )
 
 func (api *JsonLdApi) Normalize(dataset *RDFDataset, opts *JsonLdOptions) (interface{}, error) {
-	algo := NewNormalisationAlgorithm(opts.Algorithm)
+	algo := NewNormalisationAlgorithm(opts.Algorithm, opts.MessageDigestAlgorithm)
 	return algo.Main(dataset, opts)
 }
 
@@ -37,20 +44,22 @@ var (
 )
 
 type NormalisationAlgorithm struct {
-	blankNodeInfo    map[string]map[string]interface{}
-	hashToBlankNodes map[string][]string
-	canonicalIssuer  *IdentifierIssuer
-	quads            []*Quad
-	lines            []string
-	version          string
+	blankNodeInfo          map[string]map[string]interface{}
+	hashToBlankNodes       map[string][]string
+	canonicalIssuer        *IdentifierIssuer
+	quads                  []*Quad
+	lines                  []string
+	version                string
+	messageDigestAlgorithm MessageDigestAlgorithm
 }
 
-func NewNormalisationAlgorithm(version string) *NormalisationAlgorithm {
+func NewNormalisationAlgorithm(version string, messageDigestAlgorithm MessageDigestAlgorithm) *NormalisationAlgorithm {
 	return &NormalisationAlgorithm{
-		blankNodeInfo:   make(map[string]map[string]interface{}),
-		canonicalIssuer: NewIdentifierIssuer("_:c14n"),
-		quads:           make([]*Quad, 0),
-		version:         version,
+		blankNodeInfo:          make(map[string]map[string]interface{}),
+		canonicalIssuer:        NewIdentifierIssuer("_:c14n"),
+		quads:                  make([]*Quad, 0),
+		version:                version,
+		messageDigestAlgorithm: messageDigestAlgorithm,
 	}
 }
 
@@ -554,7 +563,16 @@ func (na *NormalisationAlgorithm) hashNDegreeQuads(id string, issuer *Identifier
 // helper to create appropriate hash object
 func (na *NormalisationAlgorithm) createHash() hashPkg.Hash {
 	if na.version == AlgorithmURDNA2015 {
-		return sha256.New()
+		switch na.messageDigestAlgorithm {
+		case MessageDigestAlgorithmSHA256:
+			return sha256.New()
+		case MessageDigestAlgorithmSHA384:
+			return sha512.New384()
+		case MessageDigestAlgorithmSHA512:
+			return sha512.New()
+		default:
+			return sha1.New() //nolint:gosec
+		}
 	} else {
 		return sha1.New() //nolint:gosec
 	}

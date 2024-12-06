@@ -66,55 +66,59 @@ type JsonLdOptions struct { //nolint:stylecheck
 	UseNamespaces bool
 	OutputForm    string
 	SafeMode      bool
+
+	MessageDigestAlgorithm MessageDigestAlgorithm
 }
 
 // NewJsonLdOptions creates and returns new instance of JsonLdOptions with the given base.
 func NewJsonLdOptions(base string) *JsonLdOptions { //nolint:stylecheck
 	return &JsonLdOptions{
-		Base:                  base,
-		CompactArrays:         true,
-		ProcessingMode:        JsonLd_1_1,
-		DocumentLoader:        NewDefaultDocumentLoader(nil),
-		Embed:                 EmbedLast,
-		Explicit:              false,
-		RequireAll:            true,
-		FrameDefault:          false,
-		OmitDefault:           false,
-		OmitGraph:             false,
-		UseRdfType:            false,
-		UseNativeTypes:        false,
-		ProduceGeneralizedRdf: false,
-		InputFormat:           "",
-		Format:                "",
-		Algorithm:             AlgorithmURGNA2012,
-		UseNamespaces:         false,
-		OutputForm:            "",
-		SafeMode:              false,
+		Base:                   base,
+		CompactArrays:          true,
+		ProcessingMode:         JsonLd_1_1,
+		DocumentLoader:         NewDefaultDocumentLoader(nil),
+		Embed:                  EmbedLast,
+		Explicit:               false,
+		RequireAll:             true,
+		FrameDefault:           false,
+		OmitDefault:            false,
+		OmitGraph:              false,
+		UseRdfType:             false,
+		UseNativeTypes:         false,
+		ProduceGeneralizedRdf:  false,
+		InputFormat:            "",
+		Format:                 "",
+		Algorithm:              AlgorithmURGNA2012,
+		MessageDigestAlgorithm: MessageDigestAlgorithmSHA256, // https://w3c.github.io/rdf-canon/spec/#dfn-hash-algorithm
+		UseNamespaces:          false,
+		OutputForm:             "",
+		SafeMode:               false,
 	}
 }
 
 // Copy creates a deep copy of JsonLdOptions object.
 func (opt *JsonLdOptions) Copy() *JsonLdOptions {
 	return &JsonLdOptions{
-		Base:                  opt.Base,
-		CompactArrays:         opt.CompactArrays,
-		ExpandContext:         opt.ExpandContext,
-		ProcessingMode:        opt.ProcessingMode,
-		DocumentLoader:        opt.DocumentLoader,
-		Embed:                 opt.Embed,
-		Explicit:              opt.Explicit,
-		RequireAll:            opt.RequireAll,
-		FrameDefault:          opt.FrameDefault,
-		OmitDefault:           opt.OmitDefault,
-		OmitGraph:             opt.OmitGraph,
-		UseRdfType:            opt.UseRdfType,
-		UseNativeTypes:        opt.UseNativeTypes,
-		ProduceGeneralizedRdf: opt.ProduceGeneralizedRdf,
-		InputFormat:           opt.InputFormat,
-		Format:                opt.Format,
-		Algorithm:             opt.Algorithm,
-		UseNamespaces:         opt.UseNamespaces,
-		OutputForm:            opt.OutputForm,
-		SafeMode:              opt.SafeMode,
+		Base:                   opt.Base,
+		CompactArrays:          opt.CompactArrays,
+		ExpandContext:          opt.ExpandContext,
+		ProcessingMode:         opt.ProcessingMode,
+		DocumentLoader:         opt.DocumentLoader,
+		Embed:                  opt.Embed,
+		Explicit:               opt.Explicit,
+		RequireAll:             opt.RequireAll,
+		FrameDefault:           opt.FrameDefault,
+		OmitDefault:            opt.OmitDefault,
+		OmitGraph:              opt.OmitGraph,
+		UseRdfType:             opt.UseRdfType,
+		UseNativeTypes:         opt.UseNativeTypes,
+		ProduceGeneralizedRdf:  opt.ProduceGeneralizedRdf,
+		InputFormat:            opt.InputFormat,
+		Format:                 opt.Format,
+		Algorithm:              opt.Algorithm,
+		MessageDigestAlgorithm: opt.MessageDigestAlgorithm,
+		UseNamespaces:          opt.UseNamespaces,
+		OutputForm:             opt.OutputForm,
+		SafeMode:               opt.SafeMode,
 	}
 }
